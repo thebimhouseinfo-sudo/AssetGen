@@ -1,6 +1,6 @@
 # Technical Proposal — Batch project và Concept workflow
 
-Trạng thái: **DRAFT để Human duyệt — 2026-11-02**. Đây là thiết kế đề xuất để GSA lập task, triển khai và review, không phải mô tả code đã hoạt động. Hướng sản phẩm duy nhất là [CRITERIA](./CRITERIA.md); thứ tự và acceptance thuộc [Plan](./IMPLEMENTATION_PLAN.md) và [Milestones](./MILESTONES.md). Các lựa chọn/contract dưới đây chưa phải phê duyệt độc lập. Plugin cụ thể chưa được xác định, không giả định API của plugin tồn tại.
+Trạng thái: **HUMAN APPROVED 2026-11-02**. Đây là thiết kế đề xuất để GSA lập task, triển khai và review, không phải mô tả code đã hoạt động. Hướng sản phẩm duy nhất là [CRITERIA](./CRITERIA.md); thứ tự và acceptance thuộc [Plan](./IMPLEMENTATION_PLAN.md) và [Milestones](./MILESTONES.md). Human đã duyệt đề xuất ở mức tài liệu; mọi capability chưa kiểm chứng và các chi tiết phải chốt khi lập task vẫn cần bằng chứng và review phù hợp. Plugin cụ thể chưa được xác định, không giả định API của plugin tồn tại.
 
 ## 1. Bài toán, kết quả và ranh giới
 
@@ -23,6 +23,9 @@ Bằng chứng lịch sử: [TASK-06](./reports/task-06-evidence.md), [TASK-07](
 
 ## 3. Thiết kế đề xuất cho project Batch
 
+**Nguyên tắc tỷ lệ:** ưu tiên thay đổi nhỏ trên Batch hiện có. Những ví dụ về API, khóa retry, quy tắc collision và test dưới đây là hướng dẫn xem xét rủi ro, không phải yêu cầu phải xây cơ chế tổng quát hoặc bảo đảm exactly-once qua restart. Chỉ chọn phần nhỏ nhất chứng minh được Batch làm việc đúng, báo lỗi trung thực và không làm mất ảnh/revision cũ. Nếu không có đủ bằng chứng crash/retry, báo giới hạn thay vì thêm hạ tầng hoặc tuyên bố đã bảo đảm.
+
+
 ### 3.1 Luồng người dùng
 
 1. Vào Batch: hiển thị project đang chọn bằng **tên**, hoặc trạng thái chưa chọn. Nạp danh sách project thực có; phân biệt loading, rỗng và lỗi.
@@ -44,11 +47,11 @@ Hiện slug của parser và `image_filename` không phải cùng một phép ch
 
 **Quyết định Human 2026-11-02 — lựa chọn 1:** nhập batch mới chỉ tạo job mới; nếu asset name/đường publish xung đột trong project thì từ chối asset/batch có lỗi rõ, yêu cầu đổi tên. Chỉ hành động regenerate có chủ đích cho job hiện có được thay ảnh đang hiển thị; ảnh revision cũ vẫn giữ. Không tự suy ra ý định thay ảnh chỉ vì cùng tên hay cùng ID. Không ghi đè file lạ đã tồn tại; xác minh quyền sở hữu và tên đích trước publication. Các quy tắc filename/case cần thử trên filesystem đích; không khẳng định kiểm tra bằng lowercase giải quyết mọi trường hợp.
 
-Lưu và queue hiện là hai request riêng: nếu job đã lưu nhưng queue lỗi hoặc response bị mất, bấm lại không được tạo bản sao, ghi đè metadata/revision hoặc bị kẹt vì chính ID của draft. **Đề xuất cần kiểm chứng:** phân biệt retry cùng yêu cầu chưa hoàn tất với tạo job mới bằng khóa yêu cầu/ID ổn định kèm nội dung tương ứng; lần gửi lại chỉ tiếp tục hoặc trả trạng thái các job đã lưu/queue, không reset job đang chạy hay đã hoàn tất. Nếu nội dung hoặc trạng thái không khớp, báo xung đột để user quyết định. Thiết kế phải bao phủ cả trường hợp response queue bị mất sau khi queue thành công, không gen hai lần. Cơ chế cụ thể và khả năng phục hồi qua restart cần được chốt ở task; không tuyên bố idempotency đã tồn tại.
+Lưu và queue hiện là hai request riêng: nếu job đã lưu nhưng queue lỗi hoặc response bị mất, bấm lại không được tạo bản sao, ghi đè metadata/revision hoặc bị kẹt vì chính ID của draft. **Đề xuất cần kiểm chứng:** phân biệt retry cùng yêu cầu chưa hoàn tất với tạo job mới bằng khóa yêu cầu/ID ổn định kèm nội dung tương ứng; lần gửi lại chỉ tiếp tục hoặc trả trạng thái các job đã lưu/queue, không reset job đang chạy hay đã hoàn tất. Nếu nội dung hoặc trạng thái không khớp, báo xung đột để user quyết định. Thiết kế phải bao phủ cả trường hợp response queue bị mất sau khi queue thành công, tránh gen hai lần trong các tình huống được kiểm chứng. Cơ chế cụ thể, phạm vi bảo đảm và khả năng phục hồi qua restart cần được chốt ở task theo mức cần thiết; không tuyên bố idempotency đã tồn tại hoặc exactly-once sau restart.
 
 Luồng ghi cần giữ ảnh/revision cũ nếu lưu job, inference, postprocess, ghi revision hoặc publish lỗi. Tránh lưu payload mới đè selected revision/attempts của job cũ. Không báo một job queued nếu thực tế queue từ chối; không báo thành công trước khi có output. Việc đảm bảo an toàn qua crash và thứ tự ghi thực tế phải được kiểm tra với lỗi mô phỏng; không tuyên bố atomic toàn bộ pipeline chỉ vì một thao tác rename là atomic.
 
-**Đã thống nhất:** asset trùng tên trong cùng project bị báo trùng và cần đổi tên; việc tạo lại asset cũ là thao tác riêng, giữ revision trước. Project trùng tên vẫn được phép và phải phân biệt được. Các chi tiết khác của proposal vẫn là DRAFT chờ Human duyệt.
+**Đã thống nhất:** asset trùng tên trong cùng project bị báo trùng và cần đổi tên; việc tạo lại asset cũ là thao tác riêng, giữ revision trước. Project trùng tên vẫn được phép và phải phân biệt được. Các chi tiết kỹ thuật chưa kiểm chứng vẫn cần evidence và task review trước triển khai.
 
 ## 4. Dữ liệu, tương thích và trách nhiệm
 
@@ -74,7 +77,7 @@ Kiểm thử trên bản sao hoặc temporary root bằng `ASSETGEN_SETTINGS`. K
 ## 6. Kế hoạch kiểm chứng G-05
 
 1. **Backend/API, isolated:** list rỗng/đầy, project legacy và duplicate name; tạo name hợp lệ/rỗng/trùng; project hỏng/mất; chọn theo ID nội bộ đúng; Batch vào đúng project; tên asset/filename/ID va chạm, lỗi ghi và retry; revision và file cũ còn nguyên. Thử một project chứa cả Batch và legacy Concept job, kể cả startup/recovery trên bản sao.
-2. **Queue + lưu ảnh:** kiểm tra lưu thành công rồi queue lỗi, queue thành công nhưng response bị mất, retry cùng request, retry với nội dung khác và restart; không tạo job hay ảnh trùng ngoài ý muốn. Dùng adapter giả có kiểm soát để thực sự đi qua queue và output, không gọi đó là model thật. Test job hai project, chuyển project trong khi đang chạy, sự cố trước/sau publish và trạng thái chính xác. Nếu vấn đề crash recovery không giải quyết trọn trong task, báo hạn chế và không khẳng định bảo đảm tuyệt đối.
+2. **Queue + lưu ảnh:** kiểm tra lưu thành công rồi queue lỗi, queue thành công nhưng response bị mất, retry cùng request, retry với nội dung khác và các trường hợp restart được xử lý. Với trạng thái không thể xác định chắc sau restart, báo chưa rõ và chờ user quyết định thay vì tự chạy lại hoặc tuyên bố exactly-once; bảo vệ ảnh/revision cũ. Dùng adapter giả có kiểm soát để thực sự đi qua queue và output, không gọi đó là model thật. Test job hai project, chuyển project trong khi đang chạy, sự cố trước/sau publish và trạng thái chính xác. Nếu vấn đề crash recovery không giải quyết trọn trong task, báo hạn chế và không khẳng định bảo đảm tuyệt đối.
 3. **Browser:** hai project khác nhau và trùng tên, tạo/chọn, nhập prompt, mở gallery, chuyển project với response đến muộn, reload, lỗi backend/project thiếu. Xác minh UI không đòi nhập ID hoặc chọn folder và Concept vẫn là placeholder.
 4. **Host:** build frontend; chạy các check cấu hình bằng `ASSETGEN_SETTINGS` cô lập. Nếu runtime/weights thật có sẵn và được phép, gen tối thiểu một asset trên output tạm, kiểm tra ảnh và revision. Nếu không có thì ghi rõ UNVERIFIED; không suy từ mock hoặc chỉ build. Không cài dependency khi chưa được phép.
 5. **Review:** so sánh với Criteria/Plan, kiểm tra mọi thay đổi dữ liệu và kết quả của từng phép thử; không claim toàn hệ thống đã được chứng minh khi chỉ có test hẹp.
@@ -103,9 +106,9 @@ Kiểm thử trên bản sao hoặc temporary root bằng `ASSETGEN_SETTINGS`. K
 
 GSA đọc `AGENTS.md`, role/skills và `harness/` nếu thực sự được cấp; tuân theo trạng thái branch và quy trình task trong môi trường hiện hành. Task-07 đang ACTIVE với evidence, cần xử lý theo quy trình trước task mới. Không coi file cấu hình là chứng minh native dispatch, enforcement hay user approval có xác thực. Nếu là môi trường online thiếu Mac/model/clipboard/plugin, thực hiện phần kiểm thử khả dụng và báo giới hạn; không bịa kết quả hoặc sao chép dữ liệu cá nhân lên môi trường khác. [Handoff](./HANDOFF_GSA.md) nêu bước bắt đầu.
 
-## 9. Hướng dẫn thực hiện cho GSA — bản dự kiến, chưa phải task ACTIVE
+## 9. Hướng dẫn thực hiện cho GSA — hướng dẫn đã duyệt, chưa phải task ACTIVE
 
-Đọc phần này như senior bàn giao cho implementer. Dưới đây là cách chia việc và contract **đề xuất để review**, không chứng minh code đã có và không tự kích hoạt task. Human đã chọn báo trùng asset, còn các quyết định kỹ thuật được đề xuất để Human duyệt cùng Plan. Sau duyệt, Planner/Reviewer kiểm tra lại và ghi từng task có goal + exit condition vào `TASKS.md` theo harness thực tế. Chỉ làm một lát cắt có thể kiểm chứng mỗi lần; không dùng tên task dưới đây làm ID chính thức.
+Đọc phần này như senior bàn giao cho implementer. Dưới đây là cách chia việc và contract **đề xuất để review**, không chứng minh code đã có và không tự kích hoạt task. Human đã duyệt Plan và chọn báo trùng asset. Planner/Reviewer kiểm tra lại và ghi từng task có goal + exit condition vào `TASKS.md` theo harness thực tế. Chỉ làm một lát cắt có thể kiểm chứng mỗi lần; không dùng tên task dưới đây làm ID chính thức.
 
 ### 9.1 Bước chuẩn bị trước khi sửa
 
@@ -142,7 +145,7 @@ G-01 là ràng buộc regression và bảo toàn dữ liệu, không phải GOAL
 
 **Làm:** giữ quyết định Human: batch mới có asset trùng trong cùng project thì báo trùng, user đổi tên; regenerate là thao tác riêng. Trước khi ghi, kiểm tra cả tên/đường output có thể xung đột lẫn ID job hiện hữu; không ghi đè legacy hoặc job có selected revision. Kiểm tra toàn bộ payload trước khi ghi batch, giữ dữ liệu nếu validation thất bại. Khi publish, không thay file không thuộc asset đích. Bảo toàn revision cũ khi regenerate hoặc khi một bước thất bại. Tính tương đương tên theo filesystem thực tế là vấn đề cần test, không xem slug parser là đủ.
 
-**Retry giữa save và queue:** trước khi code, thiết kế một cách phân biệt chính xác retry của cùng draft với request mới, bao gồm response queue bị mất sau khi queue thành công. Có thể dùng khóa request ổn định hoặc cơ chế tương đương; phải ghi rõ nơi lưu, cách so khớp nội dung và hành vi khi request không khớp hoặc restart. Không được gán lại `READY` cho job đang chạy/đã xong, không reset `selected_revision_id`, không queue hai lần, không trả số queue sai. Đưa thiết kế nhỏ này vào task review; không tự nhận crash-consistency nếu chưa thử. Vì queue hiện in-process, không giả định nó sống qua restart.
+**Retry giữa save và queue:** trước khi code, thiết kế một cách phân biệt chính xác retry của cùng draft với request mới, bao gồm response queue bị mất sau khi queue thành công. Có thể dùng khóa request ổn định hoặc cơ chế tương đương; phải ghi rõ nơi lưu, cách so khớp nội dung và hành vi khi request không khớp hoặc restart. Không được gán lại `READY` cho job đang chạy/đã xong, không reset `selected_revision_id`, không queue hai lần trong các tình huống đã được kiểm chứng, không trả số queue sai. Đưa thiết kế nhỏ này vào task review; không tự nhận crash-consistency nếu chưa thử. Vì queue hiện in-process, không giả định nó sống qua restart.
 
 **Xong khi:** test integration isolated có các case: tạo job, lặp request cùng nội dung sau save và sau mất response queue; nội dung khác với cùng khóa; job đã queued/completed; hai asset có slug/filename va chạm; ID trùng Batch và legacy; file lạ đã tồn tại; lỗi ghi/adapter/publish; regenerate và revision trước còn đọc được. Verify dữ liệu trước/sau bằng bytes hoặc ảnh thực tế, không chỉ kiểm status HTTP. Một số tình huống có thể cần fault injection; ghi rõ cái nào là mô phỏng. Tài liệu không yêu cầu scheduler bền vững hay database.
 

@@ -6,7 +6,7 @@ This is a personal, single-user application. Read the following in order:
 
 1. `AGENTS.md` (if included in your environment): project-specific rules. If unavailable, see the explicit boundaries below; do not infer that host hooks enforce them.
 2. `docs/CRITERIA.md`: the **only approved source of product requirements**. Do not rewrite or change it as part of implementation. A product-theory amendment has a separate Human and Technical Advisor decision process described in `AGENTS.md`.
-3. `docs/IMPLEMENTATION_PLAN.md`, `docs/MILESTONES.md`, `docs/TECHNICAL_PROPOSAL.md`: revised drafts for Human review; they describe previously approved direction and open technical questions but the new details are not yet approved.
+3. `docs/IMPLEMENTATION_PLAN.md`, `docs/MILESTONES.md`, `docs/TECHNICAL_PROPOSAL.md`: Human-approved documents updated on 2026-11-02; plugin capability and other technical facts remain unverified.
 4. `TASKS.md` and `docs/reports/task-07-evidence.md`: current delivery state and actual verification. If `TASKS.md` was excluded from the transfer, use this handoff's status and tell the Human it is missing.
 
 Historical records are clearly marked or under `docs/archive/`. They describe the discarded frame/crop/mask product and are not current requirements. `docs/ARCHITECTURE.md` and `docs/PROJECT_PROFILE.md` are dated host evidence; their old concept/offline-only direction is superseded. Reinspect source and environment before relying on host-specific claims.
@@ -20,7 +20,7 @@ Historical records are clearly marked or under `docs/archive/`. They describe th
 
 ## Current review gate
 
-The detailed Plan, Milestones and Technical Proposal were revised on 2026-11-02 and are DRAFT for Human review. Do not treat them as approved or start code until the Human approves them. TASK-07 remains ACTIVE in the local harness for delivery verification; resolve its actual state under applicable instructions before another task.
+The Human approved the updated Plan, Milestones and Technical Proposal on 2026-11-02. This does not establish GSA Bootstrap readiness or authorize source mutation by itself; reconcile the canonical Criteria link, independently review/read back the exact current records, and check MUTATE_SOURCE before implementation. TASK-07 remains ACTIVE in the local harness for delivery verification; resolve its actual state under applicable instructions before another task.
 
 ## Next work: Batch project selection
 
@@ -41,4 +41,4 @@ Design the plugin in detail: inputs, generated files, responsibilities, errors, 
 
 ## Transfer and host setup
 
-This repository includes the selected portable project instructions, roles, skills, harness scripts and task status for GSA. Host-specific branch authority is stored in Git's common directory and must be configured separately in every clone after an explicit Human decision; a tracked file does not grant branch authority. Native hooks and dispatch remain unverified. The actual local `settings.json`, model weights, runtime binaries, user projects, outputs, local snapshots and logs are not included. Use `settings.example.json` as a reference and configure isolated paths on the target host. Detailed Plan, Milestones and Technical Proposal are still DRAFT pending Human approval.
+This repository includes the selected portable project instructions, roles, skills, harness scripts and task status for GSA. Host-specific branch authority is stored in Git's common directory and must be configured separately in every clone after an explicit Human decision; a tracked file does not grant branch authority. Native hooks and dispatch remain unverified. The actual local `settings.json`, model weights, runtime binaries, user projects, outputs, local snapshots and logs are not included. Use `settings.example.json` as a reference and configure isolated paths on the target host. The updated Plan, Milestones and Technical Proposal have Human approval, but GSA Bootstrap and source-mutation authorization still require actual evidence and verification.
