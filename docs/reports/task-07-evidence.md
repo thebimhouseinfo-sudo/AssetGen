@@ -1,0 +1,9 @@
+# TASK-07 — legacy Concept backend cleanup, 2026-11-02
+
+- Removed old concept-only backend routes, image crop/extract module, legacy concept model and model-adapter operations, and obsolete tests. Kept shared Batch, project, output and revision functionality; the Concept tab remains an unconnected placeholder. Persisted user data and generated images were not deleted.
+- Compatibility: legacy concept-job JSON records are skipped by Batch and kept on disk. Startup/recovery on a synthetic mixed project preserves the legacy job's bytes while handling a queued Batch job. A UUID collision is rejected by API validation and storage safeguards; regression test proves the old record stays unchanged. Legacy concept jobs are no longer available through the removed UI/API.
+- Copied existing local data to temporary storage: loaded three projects, four Batch jobs and six revision records and exercised recovery on the copy. Hash of the original project tree remained unchanged. This does not prove all historical formats.
+- Isolated backend verification: 26 tests passed, including retained Batch tests and three new retirement/compatibility tests. The smaller test count reflects removal of tests for retired concept functionality. Existing Pydantic `.dict()` warning remains.
+- Frontend production build passed to `/tmp/assetgen-cleanup-build`; Vite warned that the external output directory would not be emptied. Chrome placeholder/Batch navigation test passed (1 test). No actual local-model inference was rerun.
+- Independent review identified a legacy ID collision risk; it was fixed and the reviewer found no further actionable issue in the reviewed paths.
+- Pre-change source/tests snapshot: `20261102T151006-85e15664c1`; legacy browser test snapshot: `20261102T151153-65f6506ebf`. These preserve removed source in the local harness snapshot store; that store is not included by ordinary Git transfer.

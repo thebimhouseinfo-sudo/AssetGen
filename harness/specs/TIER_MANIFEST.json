@@ -1,0 +1,80 @@
+{
+  "schema_version": 1,
+  "tiers": {
+    "Lite": {
+      "agents": [
+        "coder",
+        "reviewer",
+        "advisor"
+      ],
+      "gates": [],
+      "requires": [
+        "verify",
+        "snapshot",
+        "evidence"
+      ],
+      "optional": [
+        "stop_hook",
+        "approval_adapter"
+      ]
+    },
+    "Standard": {
+      "inherits": "Lite",
+      "agents": [
+        "planner",
+        "tester",
+        "critic",
+        "explorer"
+      ],
+      "gates": [
+        "G0",
+        "G1",
+        "G2",
+        "G3",
+        "G4",
+        "G5",
+        "G6",
+        "G7",
+        "G8",
+        "G9",
+        "G10",
+        "G11",
+        "G13"
+      ],
+      "requires": [
+        "milestones",
+        "review_loop",
+        "trace"
+      ],
+      "optional": [
+        "native_hooks"
+      ]
+    },
+    "Full": {
+      "inherits": "Standard",
+      "agents": [
+        "harness-fixer"
+      ],
+      "gates": [
+        "G12",
+        "G14"
+      ],
+      "requires": [
+        "doctor",
+        "git_admin",
+        "weakening_review"
+      ],
+      "optional": []
+    }
+  },
+  "stage_rules": {
+    "G13": {
+      "plan": "validate planned goal ID/test links",
+      "delivery": "validate real files/tests/evidence and no OPEN/STALE"
+    },
+    "G14": "Full only",
+    "G12": "Full and Git only"
+  },
+  "reference_runtime": "codex",
+  "portability": "Python common scripts may be reused; other runtimes need native adapter and equivalent observed behavior"
+}

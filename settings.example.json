@@ -1,0 +1,25 @@
+{
+  "model": {
+    "diffusion_model": "/path/to/model.gguf",
+    "llm_encoder": "/path/to/encoder.gguf",
+    "vae": "/path/to/vae.safetensors",
+    "vae_format": "flux2",
+    "runtime_path": "/path/to/sd-cli",
+    "steps": 4,
+    "cfg_scale": 1.0
+  },
+  "storage": {
+    "output_root": "/path/to/outputs",
+    "projects_root": "/path/to/projects"
+  },
+  "defaults": {
+    "format": "webp",
+    "compression": "balanced",
+    "style_preset": "kideschool"
+  },
+  "presets": {
+    "kideschool": "bright colors, educational style, clean vectors",
+    "corporate": "professional, minimalist, high-contrast blue",
+    "comic": "ink lines, halftone dots, vibrant colors"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "_status": "PARTIALLY_CONFIGURED: backend suite is configured; frontend build is documented separately because its output must go to a temporary directory.",
+  "_notes": "argv arrays execute without a shell; do not place secrets here. Only checks verified in the current environment are configured.",
+  "checks": [
+    {
+      "name": "backend-unit-and-smoke-tests",
+      "argv": [
+        "python3",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-p",
+        "*.py",
+        "-v"
+      ],
+      "timeout_seconds": 120
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+Hãy trình bày các prompt tạo ảnh mà tôi yêu cầu theo đúng định dạng AssetGen dưới đây. Nội dung, số lượng và phong cách ảnh sẽ do tôi mô tả riêng.
+
+Mỗi ảnh là một block:
+=== ASSET ===
+name: ten-asset-duy-nhat
+ratio: 1:1
+prompt: Noi dung prompt tao anh
+=== END ===
+
+Chỉ trả về các block, không thêm lời dẫn, giải thích, danh sách đánh số hay Markdown. Mỗi block có đúng một name, một ratio dạng hai số nguyên dương W:H và một prompt. Name phải khác nhau, ưu tiên chữ a-z, số và dấu gạch nối. Prompt có thể viết tiếp ở các dòng sau dòng prompt:; không lặp lại key prompt: trong cùng block. Kết thúc mỗi block bằng === END ===.

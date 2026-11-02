@@ -1,0 +1,5 @@
+{
+  "snapshot_apply_patch": true,
+  "stop_verify": true,
+  "description": "Stop verification activates only for a configured ACTIVE task with trace evidence and actual test commands; never signs human approvals."
+}

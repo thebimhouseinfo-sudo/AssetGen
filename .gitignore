@@ -1,0 +1,49 @@
+Rawmodel/
+bin/sd/*.dylib
+bin/sd/sd-cli
+bin/sd/sd-server
+frontend/node_modules/
+frontend/dist/
+.pnpm-store/
+outputs/
+/projects/
+test_outputs/
+test_projects/
+spike_outputs/
+__pycache__/
+*.pyc
+backend.log
+# BEGIN bootstrap local agent setup
+# mode: local
+# Local agent configuration/state; product source and docs remain trackable.
+/.antigravity/
+/.codex/
+/.claude/
+/.continue/
+/.generic/
+/lessons/
+/AGENTS.bootstrap.md
+/CLAUDE.md
+/docs/TRACE.md
+/docs/reports/_TEMPLATE.md
+/docs/reports/_REVIEW_TEMPLATE.md
+# END bootstrap local agent setup
+
+# Local Copilot port for Bootstrap
+
+# Local-only configuration, generated UI artifacts and historic machine-specific spikes
+/settings.json
+/.DS_Store
+/.playwright-mcp/
+/frontend/test-results/
+/spike_ui/
+/EXECUTION_PLAN.md
+/docs/qwen-fix-and-test-instructions.md
+/harness/snapshots/
+
+# Host-specific state and generated files
+.DS_Store
+/harness/setup-state.json
+/harness/setup-intake.json
+/harness/.bootstrap-manifest.json
+/harness/recovery-backups/

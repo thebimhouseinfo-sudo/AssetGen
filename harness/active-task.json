@@ -1,0 +1,13 @@
+{
+  "status": "ACTIVE",
+  "goal_id": "G-06",
+  "theory_ids": [
+    "concept"
+  ],
+  "tests": [
+    "tests/test_legacy_concept_cleanup.py"
+  ],
+  "evidence": [
+    "docs/reports/task-07-evidence.md"
+  ]
+}

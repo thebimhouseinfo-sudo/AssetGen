@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "active_development_branch": "v5",
+  "frozen_branches": [
+    "main"
+  ],
+  "work_branches": {
+    "feat/task-x": "v5"
+  },
+  "remote": "origin"
+}

@@ -1,0 +1,18 @@
+# OPTIONAL Coder and Tester enrichment — Google Antigravity IDE.
+# verify_commands must match harness/common/checks.json entries exactly.
+version: 1
+reload: {on_session_start: true, on_task_start: true, on_project_context_change: true}
+workers:
+  coder:
+    skills: [safe-change, implement-task, debug-protocol]
+    knowledge: []
+  tester:
+    skills: [test-and-verify, report-evidence]
+    knowledge: []
+shared:
+  host_profile: docs/PROJECT_PROFILE.md
+  official_references: []
+  verify_commands:
+    - "python harness/common/verify.py"
+  harness_runner: "python harness/common/verify.py"
+  snapshot_tool: "python harness/common/snapshot.py capture"

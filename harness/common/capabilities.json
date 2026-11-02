@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "release_kind": "BASELINE_AGENT_TEMPLATE_AND_SCRIPTS",
+  "release_claim": "INSTALLABLE_BASELINE_NOT_AUTOMATED_HARNESS",
+  "description": "Codex-first Python scripts and project-local hook definitions; Claude Code native adapter added (harness/claude/hook.py). Runtime trust, signed gates and agent orchestration remain separately unverified/unimplemented.",
+  "capabilities": {
+    "installer": "SCRIPT_TESTED",
+    "role_configs": "READY_CONTENT",
+    "inventory": "SCRIPT_TESTED",
+    "verify": "SCRIPT_TESTED",
+    "codex_preflight": "SCRIPT_TESTED",
+    "evidence": "READY_CONTENT",
+    "snapshot": "SCRIPT_TESTED",
+    "milestones": "NOT_CONFIGURED",
+    "review_loop": "NOT_CONFIGURED",
+    "trace": "NOT_CONFIGURED",
+    "doctor": "INVENTORY_ONLY",
+    "git_admin": "NOT_CONFIGURED",
+    "weakening_review": "GUIDED_ONLY",
+    "native_hooks": "READY_CONTENT",
+    "gate_engine": "NOT_CONFIGURED",
+    "authenticated_approval": "NOT_CONFIGURED",
+    "approval_ledger": "NOT_CONFIGURED",
+    "role_isolation": "GUIDED_ONLY",
+    "orchestration": "NOT_CONFIGURED",
+    "trace_links": "SCRIPT_TESTED",
+    "codex_hook_bridge": "SCRIPT_TESTED",
+    "claude_hook_bridge": "SCRIPT_TESTED",
+    "stop_hook": "SCRIPT_TESTED",
+    "branch_authority": "SCRIPT_TESTED",
+    "git_remote_protection": "NOT_CONFIGURED"
+  },
+  "runtime_smoke": {
+    "antigravity": "UNVERIFIED",
+    "codex": "UNVERIFIED",
+    "claude": "UNVERIFIED",
+    "continue": "UNVERIFIED",
+    "generic": "UNVERIFIED"
+  },
+  "claude_adapter_note": "harness/claude/hook.py installed; real Claude Code host dispatch and exit-code semantics must be smoke-tested before marking RUNTIME_VERIFIED.",
+  "note": "Generic adapter files are portable guidance, not a host-native registration. Copy-ready Codex/Antigravity templates still require project-specific settings; host enforcement and signed gates are separately unverified."
+}

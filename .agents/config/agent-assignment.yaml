@@ -1,0 +1,39 @@
+# PLUGIN/AGENT ASSIGNMENT — Google Antigravity IDE
+# Model names verified from the IDE model dropdown (2026-10-18).
+# Main chat model is user-selected; these are role-intent presets for humans to apply.
+roles:
+  planner:
+    contract: .agents/roles/planner.md
+    model: "Claude Opus 4.6 (Thinking)"
+    model_fallback: "Gemini 3.8 Flash High"
+    discovery_skills: [brainstorm-theory, research-evidence]
+    delivery_skills: [plan-task, trace-impact]
+  advisor:
+    contract: .agents/roles/advisor.md
+    model: "Claude Opus 4.6 (Thinking)"
+    model_fallback: "Gemini 3.8 Flash High"
+    trigger: full_initial_draft_preapproval_or_human_settled_delta_preapply
+    optional_comparison: [tam_dung, on_dinh, nang_cao]
+  reviewer:
+    contract: .agents/roles/reviewer.md
+    model: "Claude Sonnet 4.6 (Thinking)"
+    model_fallback: "Gemini 3.8 Flash High"
+  critic:
+    contract: .agents/roles/critic.md
+    model: "GPT-OSS 120B (Medium)"
+    model_fallback: "Gemini 3.8 Flash High"
+  coder:
+    contract: .agents/roles/coder.md
+    model: "Claude Sonnet 4.6 (Thinking)"
+    model_fallback: "Gemini 3.8 Flash High"
+  tester:
+    contract: .agents/roles/tester.md
+    model: "Gemini 3.8 Flash High"
+    model_fallback: "Claude Sonnet 4.6 (Thinking)"
+  explorer:
+    contract: .agents/roles/explorer.md
+    model: "Gemini 3.8 Flash High"
+    model_fallback: "Claude Sonnet 4.6 (Thinking)"
+# Model change requires explicit user decision; never substitute silently.
+# Unavailable model -> report UNAVAILABLE, do not fallback without human approval.
+# Antigravity-native role definitions: .antigravity/agents/*.md

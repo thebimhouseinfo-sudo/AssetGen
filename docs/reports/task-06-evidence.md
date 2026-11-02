@@ -1,0 +1,8 @@
+# TASK-06 evidence — 2026-11-01
+
+- Scope: replaced Concept tab with an explicitly unconnected placeholder; removed four concept-only React components after checking their imports. Backend concept routes and all user data remain untouched; old concept browser test was preserved under frontend/legacy-tests.
+- Browser: `ASSETGEN_FRONTEND_URL=http://127.0.0.1:5179 PLAYWRIGHT_CHANNEL=chrome npx --prefix frontend playwright test concept-placeholder.spec.ts --config frontend/playwright.config.ts` passed 1 test in Chrome. It checks placeholder, absence of old frame control, and access to the Batch prompt input. Before implementation it failed because the Concept button did not exist. It does not demonstrate model inference.
+- Build: `npm --prefix frontend run build -- --outDir /tmp/assetgen-g06-build` passed. Vite warned that the external output directory would not be emptied.
+- Backend: `ASSETGEN_SETTINGS=<isolated-settings> python3 harness/common/verify.py` passed all 42 configured tests; existing Pydantic deprecation warning remains. This does not establish a new real model run.
+- Safety: no project or output data was edited by this task. Components and App were captured in snapshot `20261101T051424-5c9ca1da9e` and a separate `/tmp/assetgen-g06-backup` copy; copy restoration was exercised into a separate temporary directory and compared. The workspace is not a Git repository.
+- Not in scope: actual HTML rendering, clipboard, plugin, new project selection, real model inference and removal of legacy backend routes. Old editor-specific E2E is retained as historical rather than an active test.
