@@ -8,3 +8,12 @@ prompt: Noi dung prompt tao anh
 === END ===
 
 Chỉ trả về các block, không thêm lời dẫn, giải thích, danh sách đánh số hay Markdown. Mỗi block có đúng một name, một ratio dạng hai số nguyên dương W:H và một prompt. Name phải khác nhau, ưu tiên chữ a-z, số và dấu gạch nối. Prompt có thể viết tiếp ở các dòng sau dòng prompt:; không lặp lại key prompt: trong cùng block. Kết thúc mỗi block bằng === END ===.
+
+Tuỳ chọn, thêm vào block khi cần, đặt SAU name/ratio và TRƯỚC prompt, mỗi khoá tối đa một lần; không có thì dùng cài đặt mặc định của AssetGen:
+width: 512 và height: 512 (kích thước ảnh xuất, số nguyên dương, phải đi cùng nhau)
+max_kb: 200 (dung lượng tối đa, số nguyên dương)
+format: png, webp hoặc jpeg
+compression: lossless, balanced hoặc smallest (jpeg không dùng lossless)
+fit: fit hoặc fill
+remove_background: true hoặc false (tách nền, cần png hoặc webp, không dùng với jpeg)
+Chỉ thêm các khoá này khi tôi yêu cầu rõ kích thước, dung lượng, định dạng hoặc tách nền.

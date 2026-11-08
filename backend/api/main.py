@@ -14,8 +14,9 @@ from datetime import datetime, timezone
 from typing import List, Optional
 from ..config import load_settings
 from ..projects.manager import ProjectManager
-from ..generation.parser import PromptParser
+from ..generation.parser import PromptParser, JOB_FIELDS
 from ..postprocess.engine import OutputEngine
+from ..postprocess.background import BackgroundRemover
 from ..queue.engine import GenerationQueue
 from ..generation.adapter import ModelAdapter
 from ..projects.models import TextAssetJob, Revision
@@ -28,7 +29,7 @@ settings = load_settings()
 pm = ProjectManager(settings["storage"]["projects_root"])
 queue = GenerationQueue()
 parser = PromptParser()
-engine = OutputEngine(settings["storage"]["output_root"])
+engine = OutputEngine(settings["storage"]["output_root"], BackgroundRemover(settings.get("background_removal")))
 adapter = ModelAdapter(settings)
 queue = GenerationQueue()
 
@@ -201,13 +202,10 @@ async def upload_batch(file: UploadFile):
         raise HTTPException(status_code=422, detail={"code": "INVALID_UTF8", "message": str(e), "details": {}})
     jobs, errors = parser.parse(content)
 
-    # Apply default target sizes from settings (simulated)
-    for job in jobs:
-        job.target_width = 512
-        job.target_height = 512
-
+    # explicit_fields lists the options the block set itself, so the UI keeps them over global defaults.
+    option_fields = set(JOB_FIELDS.values())
     return {
-        "jobs": [job.dict() for job in jobs],
+        "jobs": [{**job.model_dump(), "explicit_fields": sorted(job.model_fields_set & option_fields)} for job in jobs],
         "errors": errors,
         "count": len(jobs)
     }
@@ -253,7 +251,8 @@ async def process_job(job_id: str, project_id: str):
                 compression=job.compression_mode,
                 fit_mode=job.fit_mode,
                 max_kb=job.max_kb,
-                background_color=job.background_color
+                background_color=job.background_color,
+                remove_background=job.remove_background
             )
             final_path, metadata = engine.process(img, out_settings)
 

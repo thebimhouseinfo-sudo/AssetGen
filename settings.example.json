@@ -12,6 +12,12 @@
     "output_root": "/path/to/outputs",
     "projects_root": "/path/to/projects"
   },
+  "background_removal": {
+    "enabled": false,
+    "python": "/path/to/python-with-torch",
+    "model": "ZhengPeng7/BiRefNet",
+    "device": "mps"
+  },
   "defaults": {
     "format": "webp",
     "compression": "balanced",

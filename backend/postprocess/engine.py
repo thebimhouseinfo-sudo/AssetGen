@@ -6,21 +6,32 @@ import uuid
 import tempfile
 from typing import Tuple, Optional, Dict, Any
 from ..projects.models import OutputSettings
+from .background import BackgroundRemover
 
 class OutputEngine:
-    def __init__(self, output_root: str):
+    def __init__(self, output_root: str, remover: Optional[Any] = None):
         self.output_root = output_root
+        self.remover = remover
 
     def process(self, image: Image.Image, settings: OutputSettings) -> Tuple[str, Dict[str, Any]]:
+        # 0. Optional background removal on the original image, before resize
+        transparent = bool(settings.remove_background)
+        if transparent:
+            if settings.format == "jpeg":
+                raise ValueError("JPEG does not support transparency; use png or webp with remove_background")
+            remover = self.remover or BackgroundRemover()
+            image = remover.remove(image).convert("RGBA")
+
         # 1. Resize (Fit/Fill)
-        processed_img = self.resize(image, settings.width, settings.height, settings.fit_mode, settings.background_color)
+        bg_color = "#00000000" if transparent else settings.background_color
+        processed_img = self.resize(image, settings.width, settings.height, settings.fit_mode, bg_color, transparent)
 
         # 2. Format and Compression
         final_path, metadata = self.save_with_compression(processed_img, settings)
 
         return final_path, metadata
 
-    def resize(self, image: Image.Image, target_w: int, target_h: int, mode: str, bg_color: str) -> Image.Image:
+    def resize(self, image: Image.Image, target_w: int, target_h: int, mode: str, bg_color: str, transparent_bg: bool = False) -> Image.Image:
         img_w, img_h = image.size
 
         if mode == "fit":
@@ -33,7 +44,11 @@ class OutputEngine:
             new_img = Image.new("RGBA", (target_w, target_h), bg_color)
             offset_x = (target_w - new_w) // 2
             offset_y = (target_h - new_h) // 2
-            new_img.paste(resized, (offset_x, offset_y), resized if resized.mode == "RGBA" else None)
+            if transparent_bg:
+                # Copy RGBA as-is; masked paste would square the alpha on a transparent canvas
+                new_img.paste(resized.convert("RGBA"), (offset_x, offset_y))
+            else:
+                new_img.paste(resized, (offset_x, offset_y), resized if resized.mode == "RGBA" else None)
             return new_img
 
         elif mode == "fill":

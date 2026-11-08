@@ -19,11 +19,14 @@ class OutputSettings(BaseModel):
     compression: Literal["lossless", "balanced", "smallest"] = "balanced"
     max_kb: Optional[int] = Field(default=None, gt=0)
     background_color: str = "#FFFFFF"
+    remove_background: bool = False
 
     @model_validator(mode="after")
     def check_format(self):
         if self.format == "jpeg" and self.compression == "lossless":
             raise ValueError("JPEG does not support lossless compression")
+        if self.format == "jpeg" and self.remove_background:
+            raise ValueError("JPEG does not support transparency; use png or webp with remove_background")
         return self
 
 class AssetJobBase(BaseModel):
@@ -38,6 +41,7 @@ class AssetJobBase(BaseModel):
     fit_mode: Literal["fit", "fill"] = "fill"
     max_kb: Optional[int] = Field(default=None, gt=0)
     background_color: str = "#FFFFFF"
+    remove_background: bool = False
     selected_revision_id: Optional[str] = None
     output_filename: Optional[str] = None
     attempts: List[dict] = Field(default_factory=list)
@@ -46,6 +50,8 @@ class AssetJobBase(BaseModel):
     def check_output(self):
         if self.output_format == "jpeg" and self.compression_mode == "lossless":
             raise ValueError("JPEG does not support lossless compression")
+        if self.output_format == "jpeg" and self.remove_background:
+            raise ValueError("JPEG does not support transparency; use png or webp with remove_background")
         return self
 
 class TextAssetJob(AssetJobBase):

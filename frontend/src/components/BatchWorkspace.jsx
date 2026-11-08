@@ -81,7 +81,7 @@ const BatchWorkspace = ({ projectId, setProjectId, globalSettings, stylePrompt, 
       const saved = await fetch(`http://localhost:8001/projects/${activeProjectId}/batch/jobs`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(jobs.map(job => ({
+        body: JSON.stringify(jobs.map(({ explicit_fields: explicitFields = [], ...job }) => ({
           ...job,
           target_width: globalSettings.width,
           target_height: globalSettings.height,
@@ -91,6 +91,8 @@ const BatchWorkspace = ({ projectId, setProjectId, globalSettings, stylePrompt, 
           max_kb: globalSettings.max_kb,
           background_color: globalSettings.background_color,
           style_prompt: stylePrompt,
+          // Options written in the prompt block win over the global defaults.
+          ...Object.fromEntries(explicitFields.filter(field => field in job).map(field => [field, job[field]])),
         }))),
       });
       if (!saved.ok) {

@@ -2,6 +2,22 @@ import re
 from typing import List, Tuple, Optional, Dict, Any
 from ..projects.models import TextAssetJob
 
+OPTIONAL_KEYS = ("width", "height", "max_kb", "format", "compression", "fit", "remove_background")
+FORMAT_VALUES = ("png", "webp", "jpeg")
+COMPRESSION_VALUES = ("lossless", "balanced", "smallest")
+FIT_VALUES = ("fit", "fill")
+# optional key -> TextAssetJob field
+JOB_FIELDS = {
+    "width": "target_width",
+    "height": "target_height",
+    "max_kb": "max_kb",
+    "format": "output_format",
+    "compression": "compression_mode",
+    "fit": "fit_mode",
+    "remove_background": "remove_background",
+}
+
+
 class PromptParser:
     def parse(self, text: str) -> Tuple[List[TextAssetJob], List[Dict[str, Any]]]:
         jobs = []
@@ -16,6 +32,7 @@ class PromptParser:
         seen_keys = set()
         seen_slugs = set()
         block_error = False
+        key_lines = {}
 
         for line_idx, line in enumerate(lines, 1):
             stripped = line.strip()
@@ -38,6 +55,7 @@ class PromptParser:
                 current_key = None
                 seen_keys = set()
                 block_error = False
+                key_lines = {}
                 continue
 
             if not current_block:
@@ -96,15 +114,22 @@ class PromptParser:
                         "level": "warning"
                     })
 
+                options, option_errors = self.parse_options(block_data, key_lines, name or f"Block {len(jobs) + 1}")
+                if option_errors:
+                    diagnostics.extend(option_errors)
+                    block_error = True
+
                 if name and prompt and not block_error:
-                    jobs.append(TextAssetJob(
-                        name=name,
-                        ratio=ratio,
-                        prompt=prompt,
-                        target_width=512,
-                        target_height=512
-                    ))
-                    seen_slugs.add(slug)
+                    try:
+                        jobs.append(TextAssetJob(
+                            name=name,
+                            ratio=ratio,
+                            prompt=prompt,
+                            **{"target_width": 512, "target_height": 512, **options}
+                        ))
+                        seen_slugs.add(slug)
+                    except ValueError as exc:
+                        diagnostics.append({"code": "INVALID_OPTIONS", "message": str(exc).splitlines()[-1] if str(exc) else "Invalid options", "line": block_start_line, "asset": name, "field": None})
 
                 current_block = False
                 current_key = None
@@ -119,6 +144,22 @@ class PromptParser:
             if ":" in stripped:
                 key_part, val_part = stripped.split(":", 1)
                 key = key_part.strip().lower()
+
+                if key in OPTIONAL_KEYS and current_key != "prompt":
+                    if key in seen_keys:
+                        diagnostics.append({
+                            "code": "DUPLICATE_KEY",
+                            "message": f"Duplicate key '{key}' in block",
+                            "line": line_idx,
+                            "asset": block_data.get("name") or f"Block {len(jobs) + 1}",
+                            "field": key
+                        })
+                        block_error = True
+                    current_key = key
+                    seen_keys.add(key)
+                    block_data[key] = val_part.strip()
+                    key_lines[key] = line_idx
+                    continue
 
                 if key in ["name", "ratio", "prompt"]:
                     if key in seen_keys:
@@ -181,6 +222,44 @@ class PromptParser:
             })
 
         return jobs, diagnostics
+
+    def parse_options(self, data: Dict[str, str], key_lines: Dict[str, int], asset: str):
+        """Validate optional block keys. Returns (job field values, diagnostics)."""
+        options: Dict[str, Any] = {}
+        errors: List[Dict[str, Any]] = []
+
+        def fail(key, message):
+            errors.append({"code": "INVALID_" + key.upper(), "message": message, "line": key_lines.get(key), "asset": asset, "field": key})
+
+        for key in ("width", "height", "max_kb"):
+            if key in data:
+                raw = data[key]
+                if re.fullmatch(r"[1-9]\d*", raw):
+                    options[JOB_FIELDS[key]] = int(raw)
+                else:
+                    fail(key, f"{key} must be a positive integer")
+        if ("width" in data) != ("height" in data):
+            missing = "height" if "width" in data else "width"
+            errors.append({"code": "INCOMPLETE_SIZE", "message": "width and height must be given together", "line": key_lines.get("width") or key_lines.get("height"), "asset": asset, "field": missing})
+
+        for key, allowed in (("format", FORMAT_VALUES), ("compression", COMPRESSION_VALUES), ("fit", FIT_VALUES)):
+            if key in data:
+                value = data[key].lower()
+                if value in allowed:
+                    options[JOB_FIELDS[key]] = value
+                else:
+                    fail(key, f"{key} must be one of: {', '.join(allowed)}")
+
+        if "remove_background" in data:
+            value = data["remove_background"].lower()
+            if value in ("true", "false"):
+                options["remove_background"] = value == "true"
+            else:
+                fail("remove_background", "remove_background must be true or false")
+
+        if options.get("output_format") == "jpeg" and options.get("remove_background") is True:
+            errors.append({"code": "JPEG_REMOVE_BACKGROUND", "message": "JPEG does not support transparency; use png or webp with remove_background", "line": key_lines.get("remove_background"), "asset": asset, "field": "remove_background"})
+        return options, errors
 
     def normalize_name(self, name: str) -> str:
         normalized = name.lower().strip()
